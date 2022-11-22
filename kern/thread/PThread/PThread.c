@@ -100,10 +100,34 @@ void sched_update(void)
  */
 void thread_sleep(void *chan, spinlock_t *lk)
 {
+    unsigned int old_cur_pid;
+    unsigned int new_cur_pid;
+
     // TODO: your local variables here.
 
     if (lk == 0)
         KERN_PANIC("sleep without lock");
+
+   
+
+    spinlock_acquire(&sched_lk);
+    spinlock_release(lk);
+
+    old_cur_pid = get_curid();
+    tcb_set_state(old_cur_pid, TSTATE_SLEEP);
+    tcb_set_chan(old_cur_pid, chan);
+    tqueue_enqueue(0, old_cur_pid);
+
+    new_cur_pid = tqueue_dequeue(NUM_IDS);
+    tcb_set_state(new_cur_pid, TSTATE_RUN);
+    set_curid(new_cur_pid);
+
+    spinlock_release(&sched_lk);
+    kctx_switch(old_cur_pid, new_cur_pid);
+
+    spinlock_acquire(&sched_lk);
+    spinlock_acquire(lk);
+    spinlock_release(&sched_lk);
 
     // TODO:
     // Must acquire sched_lk in order to change the current thread's state and
@@ -118,6 +142,7 @@ void thread_sleep(void *chan, spinlock_t *lk)
     // TODO: Tidy up.
 
     // TODO: Reacquire original lock.
+
 }
 
 /**
@@ -126,4 +151,27 @@ void thread_sleep(void *chan, spinlock_t *lk)
 void thread_wakeup(void *chan)
 {
     // TODO
+    unsigned int iter_pid;
+    unsigned int chan_addy;
+
+    spinlock_acquire(&sched_lk);
+
+    iter_pid = tqueue_get_head(0);
+    chan_addy = (unsigned int) chan;
+
+    while (iter_pid != NUM_IDS) {
+        if ((unsigned int) tcb_get_chan(iter_pid) == chan_addy) {
+            
+            //wake up
+            tcb_set_state(iter_pid, TSTATE_READY);
+            tqueue_enqueue(NUM_IDS, iter_pid);
+
+            tcb_set_chan(iter_pid, 0);
+            tqueue_remove(0, iter_pid);
+
+        }
+        iter_pid = tcb_get_next(iter_pid);
+    }
+
+    spinlock_release(&sched_lk);
 }

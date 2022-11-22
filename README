@@ -8,7 +8,7 @@ To use your solutions from lab 1: git merge lab1
 To use sample lab 1 solutions: copy files in samples/ to appropriate directories
 
 List here the following info:
-1. who you have worked with
-2. whether you coded this assignment together, and if not, who worked on which part
-3. brief description of what you have implemented
-4. and anything else you would like us to know
+1. Dylan Vroon and Evan Schott
+2. We coded this assignment together
+3. We implemented parts 1 through 3, and made the shell process (without exercise 17). 
+Hopefully we will finish part 4 but for now it is unfinished.

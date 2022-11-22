@@ -9,12 +9,16 @@
 #include <kern/thread/PTCBIntro/export.h>
 #include <kern/thread/PCurID/export.h>
 #include <kern/trap/TSyscallArg/export.h>
+#include <kern/dev/console.h>
 
 #include "dir.h"
 #include "path.h"
 #include "file.h"
 #include "fcntl.h"
 #include "log.h"
+
+char read_buf[10000];
+int count = 0;
 
 /**
  * This function is not a system call handler, but an auxiliary function
@@ -26,6 +30,13 @@
  */
 static int fdalloc(struct file *f)
 {
+    int cur_id = get_curid();
+    for (int fd = 0; fd < NOFILE; fd++) {
+        if (tcb_get_openfiles(cur_id)[fd] == 0) {
+            tcb_set_openfiles(cur_id, fd, f);
+            return fd;
+        }
+    }
     // TODO
     return -1;
 }
@@ -41,7 +52,45 @@ static int fdalloc(struct file *f)
  */
 void sys_read(tf_t *tf)
 {
-    // TODO
+    int fd;
+    size_t n, result;
+
+    fd = syscall_get_arg2(tf);
+    n = syscall_get_arg4(tf);
+    if (n > 10000) {
+        syscall_set_retval1(tf, -1);
+        syscall_set_errno(tf, E_INVAL_ID);
+        return;
+    }
+    if (tcb_get_openfiles(get_curid())[fd] == 0) {
+        syscall_set_errno(tf, E_BADF);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+    if (!(VM_USERLO <= syscall_get_arg3(tf) && syscall_get_arg3(tf) + n <= VM_USERHI)) {
+        syscall_set_errno(tf, E_INVAL_ADDR);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+    result = file_read(tcb_get_openfiles(get_curid())[fd], read_buf, n);
+    // KERN_DEBUG("checkL %d\n", result);
+    if (result < 0) {
+        syscall_set_retval1(tf, -1);
+        syscall_set_errno(tf, E_BADF);
+        return;
+    }
+    pt_copyout(read_buf, get_curid(), syscall_get_arg3(tf), n);
+    // KERN_DEBUG("read_buf: %d\n", ((int *) read_buf)[0]);
+
+    if (result < 0) {
+        syscall_set_errno(tf, E_BADF);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+
+    syscall_set_retval1(tf, result);
+    syscall_set_errno(tf, E_SUCC);
+    return;
 }
 
 /**
@@ -55,7 +104,40 @@ void sys_read(tf_t *tf)
  */
 void sys_write(tf_t *tf)
 {
-    // TODO
+    int fd, result;
+    size_t n;
+
+    fd = syscall_get_arg2(tf);
+    n = syscall_get_arg4(tf);
+    if (n > 10000) {
+        syscall_set_retval1(tf, -1);
+        syscall_set_errno(tf, E_INVAL_ID);
+        return;
+    }
+    if (!(VM_USERLO <= syscall_get_arg3(tf) && syscall_get_arg3(tf) + n <= VM_USERHI)) {
+        syscall_set_errno(tf, E_INVAL_ADDR);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+    pt_copyin(get_curid(), syscall_get_arg3(tf), read_buf, n);
+    if (tcb_get_openfiles(get_curid())[fd] == 0) {
+        syscall_set_errno(tf, E_BADF);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+    // KERN_DEBUG("write_buf: %d\n", ((int *) read_buf)[0]);
+    result = file_write(tcb_get_openfiles(get_curid())[fd], read_buf, n);
+
+    if (result <= 0) {
+        syscall_set_errno(tf, E_BADF);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+
+    syscall_set_retval1(tf, result);
+    syscall_set_errno(tf, E_SUCC);
+    return;
+
 }
 
 /**
@@ -64,7 +146,23 @@ void sys_write(tf_t *tf)
  */
 void sys_close(tf_t *tf)
 {
+    // KERN_DEBUG("called sys_close\n");
     // TODO
+    int fd;
+
+    fd = syscall_get_arg2(tf);
+    if (tcb_get_openfiles(get_curid())[fd] == 0) {
+        syscall_set_errno(tf, E_BADF);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+    file_close(tcb_get_openfiles(get_curid())[fd]);
+    tcb_set_openfiles(get_curid(), fd, 0);
+    //how do I error check this
+    syscall_set_retval1(tf, 0);
+    syscall_set_errno(tf, E_SUCC);
+    return;
+
 }
 
 /**
@@ -74,6 +172,33 @@ void sys_close(tf_t *tf)
 void sys_fstat(tf_t *tf)
 {
     // TODO
+    int fd, pid;
+    struct file_stat *st;
+    pid = get_curid();
+
+    fd = syscall_get_arg2(tf);
+
+    if (!(VM_USERLO <= syscall_get_arg3(tf) && syscall_get_arg3(tf) + sizeof(struct file_stat) <= VM_USERHI)) {
+        syscall_set_errno(tf, E_INVAL_ADDR);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+    st = (struct file_stat *) syscall_get_arg3(tf);
+
+    if (tcb_get_openfiles(pid)[fd] == 0) {
+        syscall_set_errno(tf, E_BADF);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+    if (file_stat(tcb_get_openfiles(pid)[fd], st) == 0) {
+        syscall_set_errno(tf, E_SUCC);
+        syscall_set_retval1(tf, 0);
+        return;
+    } else {
+        syscall_set_errno(tf, E_BADF);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
 }
 
 /**
@@ -83,9 +208,32 @@ void sys_link(tf_t * tf)
 {
     char name[DIRSIZ], new[128], old[128];
     struct inode *dp, *ip;
+    uint32_t old_size, new_size;
 
-    pt_copyin(get_curid(), syscall_get_arg2(tf), old, 128);
-    pt_copyin(get_curid(), syscall_get_arg3(tf), new, 128);
+
+    old_size = syscall_get_arg4(tf);
+    if (old_size > 128)
+        KERN_PANIC("old_size is too big");  
+    if (!(VM_USERLO <= syscall_get_arg2(tf) && syscall_get_arg2(tf) + old_size <= VM_USERHI)) {
+        syscall_set_errno(tf, E_INVAL_ADDR);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+    pt_copyin(get_curid(), syscall_get_arg2(tf), old, old_size);
+    if (old_size != 128)
+        old[old_size] = '\0';
+
+    new_size = syscall_get_arg5(tf);
+    if (new_size > 128)
+        KERN_PANIC("size is too big");  
+    if (!(VM_USERLO <= syscall_get_arg3(tf) && syscall_get_arg3(tf) + new_size <= VM_USERHI)) {
+        syscall_set_errno(tf, E_INVAL_ADDR);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+    pt_copyin(get_curid(), syscall_get_arg3(tf), new, new_size);
+    if (new_size != 128)
+        new[new_size] = '\0';
 
     if ((ip = namei(old)) == 0) {
         syscall_set_errno(tf, E_NEXIST);
@@ -94,6 +242,7 @@ void sys_link(tf_t * tf)
 
     begin_trans();
 
+    // KERN_DEBUG("4\n");
     inode_lock(ip);
     if (ip->type == T_DIR) {
         inode_unlockput(ip);
@@ -108,6 +257,7 @@ void sys_link(tf_t * tf)
 
     if ((dp = nameiparent(new, name)) == 0)
         goto bad;
+    // KERN_DEBUG("5\n");
     inode_lock(dp);
     if (dp->dev != ip->dev || dir_link(dp, name, ip->inum) < 0) {
         inode_unlockput(dp);
@@ -122,6 +272,7 @@ void sys_link(tf_t * tf)
     return;
 
 bad:
+    // KERN_DEBUG("6\n");
     inode_lock(ip);
     ip->nlink--;
     inode_update(ip);
@@ -153,9 +304,25 @@ void sys_unlink(tf_t *tf)
     struct inode *ip, *dp;
     struct dirent de;
     char name[DIRSIZ], path[128];
-    uint32_t off;
+    uint32_t off, size;
 
-    pt_copyin(get_curid(), syscall_get_arg2(tf), path, 128);
+
+    size = syscall_get_arg3(tf);
+    // KERN_DEBUG("open: size: %d\n", size);
+    if (size > 128)
+        KERN_PANIC("size is too big");  
+    if (!(VM_USERLO <= syscall_get_arg2(tf) && syscall_get_arg2(tf) + size <= VM_USERHI)) {
+        syscall_set_errno(tf, E_INVAL_ADDR);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+    pt_copyin(get_curid(), syscall_get_arg2(tf), path, size);
+    // KERN_DEBUG("open: prev_path: %s\n", path);
+    if (size != 128)
+        path[size] = '\0';
+    // KERN_DEBUG("open: path: %s\n", path);
+
+    // pt_copyin(get_curid(), syscall_get_arg2(tf), path, 128);
 
     if ((dp = nameiparent(path, name)) == 0) {
         syscall_set_errno(tf, E_DISK_OP);
@@ -212,11 +379,27 @@ static struct inode *create(char *path, short type, short major, short minor)
     struct inode *ip, *dp;
     char name[DIRSIZ];
 
-    if ((dp = nameiparent(path, name)) == 0)
+    // KERN_DEBUG("path: %s\n", path);
+    // KERN_DEBUG("called create\n");
+
+    if ((dp = nameiparent(path, name)) == 0) {
+        KERN_DEBUG("create: dp namei parent is 0\n");
         return 0;
+    }
+
+    // KERN_DEBUG("name: %s\n", name);
+    
+
+    // KERN_DEBUG("got past nameiparent\n");
+    // KERN_DEBUG("1\n");
     inode_lock(dp);
 
+    // KERN_DEBUG("test");
+
+
+
     if ((ip = dir_lookup(dp, name, &off)) != 0) {
+        // KERN_DEBUG("create: lookup exists\n");
         inode_unlockput(dp);
         inode_lock(ip);
         if (type == T_FILE && ip->type == T_FILE)
@@ -228,6 +411,7 @@ static struct inode *create(char *path, short type, short major, short minor)
     if ((ip = inode_alloc(dp->dev, type)) == 0)
         KERN_PANIC("create: ialloc");
 
+    // KERN_DEBUG("2\n");
     inode_lock(ip);
     ip->major = major;
     ip->minor = minor;
@@ -235,6 +419,7 @@ static struct inode *create(char *path, short type, short major, short minor)
     inode_update(ip);
 
     if (type == T_DIR) {  // Create . and .. entries.
+        // KERN_DEBUG("create: T_DIR stage\n");
         dp->nlink++;      // for ".."
         inode_update(dp);
         // No ip->nlink++ for ".": avoid cyclic ref count.
@@ -252,20 +437,39 @@ static struct inode *create(char *path, short type, short major, short minor)
 
 void sys_open(tf_t *tf)
 {
+    // KERN_DEBUG("called sys_open\n");
     char path[128];
     int fd, omode;
     struct file *f;
     struct inode *ip;
+    uint32_t size;
 
-    pt_copyin(get_curid(), syscall_get_arg2(tf), path, 128);
+    size = syscall_get_arg4(tf);
+    // KERN_DEBUG("open: size: %d\n", size);
+    if (size > 128)
+        KERN_PANIC("size is too big");  
+
+    if (!(VM_USERLO <= syscall_get_arg2(tf) && syscall_get_arg2(tf) + size <= VM_USERHI)) {
+        syscall_set_errno(tf, E_INVAL_ADDR);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+    pt_copyin(get_curid(), syscall_get_arg2(tf), path, size);
+    // KERN_DEBUG("open: prev_path: %s\n", path);
+    if (size != 128)
+        path[size] = '\0';
+    // KERN_DEBUG("open: path: %s\n", path);
+
     omode = syscall_get_arg3(tf);
 
     if (omode & O_CREATE) {
         begin_trans();
         ip = create(path, T_FILE, 0, 0);
+        // KERN_DEBUG("create finished in open/O_CREATE\n");
         commit_trans();
         if (ip == 0) {
             syscall_set_retval1(tf, -1);
+            // KERN_DEBUG("e_create error \n");
             syscall_set_errno(tf, E_CREATE);
             return;
         }
@@ -273,9 +477,12 @@ void sys_open(tf_t *tf)
         if ((ip = namei(path)) == 0) {
             syscall_set_retval1(tf, -1);
             syscall_set_errno(tf, E_NEXIST);
+            // KERN_DEBUG("zero return on namei\n");
             return;
         }
+        // KERN_DEBUG("trying to lock inode in open\n");
         inode_lock(ip);
+        // KERN_DEBUG("locked inode in open\n");
         if (ip->type == T_DIR && omode != O_RDONLY) {
             inode_unlockput(ip);
             syscall_set_retval1(tf, -1);
@@ -285,10 +492,14 @@ void sys_open(tf_t *tf)
     }
 
     if ((f = file_alloc()) == 0 || (fd = fdalloc(f)) < 0) {
-        if (f)
+        if (f) {
             file_close(f);
+            // KERN_DEBUG("fd fucked up: %d \n", count);
+            // count++;
+        }
         inode_unlockput(ip);
         syscall_set_retval1(tf, -1);
+        // KERN_DEBUG("e_disk error\n");
         syscall_set_errno(tf, E_DISK_OP);
         return;
     }
@@ -307,8 +518,22 @@ void sys_mkdir(tf_t *tf)
 {
     char path[128];
     struct inode *ip;
+    uint32_t size;
 
-    pt_copyin(get_curid(), syscall_get_arg2(tf), path, 128);
+    size = syscall_get_arg3(tf);
+    if (size > 128)
+        KERN_PANIC("size is too big");  
+    else if (size == 128)
+        size = 127;
+    if (!(VM_USERLO <= syscall_get_arg2(tf) && syscall_get_arg2(tf) + size <= VM_USERHI)) {
+        syscall_set_errno(tf, E_INVAL_ADDR);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+    pt_copyin(get_curid(), syscall_get_arg2(tf), path, size);
+    if (size != 128)
+        path[size] = '\0';
+
 
     begin_trans();
     if ((ip = (struct inode *) create(path, T_DIR, 0, 0)) == 0) {
@@ -326,13 +551,25 @@ void sys_chdir(tf_t *tf)
     char path[128];
     struct inode *ip;
     int pid = get_curid();
+    uint32_t size;
 
-    pt_copyin(get_curid(), syscall_get_arg2(tf), path, 128);
+    size = syscall_get_arg3(tf);
+    if (size > 128)
+        KERN_PANIC("size is too big");  
+    if (!(VM_USERLO <= syscall_get_arg2(tf) && syscall_get_arg2(tf) + size <= VM_USERHI)) {
+        syscall_set_errno(tf, E_INVAL_ADDR);
+        syscall_set_retval1(tf, -1);
+        return;
+    }
+    pt_copyin(get_curid(), syscall_get_arg2(tf), path, size);
+    if (size != 128)
+        path[size] = '\0';
 
     if ((ip = namei(path)) == 0) {
         syscall_set_errno(tf, E_DISK_OP);
         return;
     }
+    // KERN_DEBUG("3\n");
     inode_lock(ip);
     if (ip->type != T_DIR) {
         inode_unlockput(ip);
@@ -343,4 +580,21 @@ void sys_chdir(tf_t *tf)
     inode_put(tcb_get_cwd(pid));
     tcb_set_cwd(pid, ip);
     syscall_set_errno(tf, E_SUCC);
+}
+
+void sys_readlin(tf_t *tf) {
+    char *result, input;
+
+    KERN_DEBUG("got here?\n");
+
+    result = (char *) syscall_get_arg2(tf);
+    input = readline("$> ");
+
+    
+
+    memcpy(result, (const void *) input, strnlen((const char *) input, CONSOLE_BUFFER_SIZE));
+
+    syscall_set_errno(tf, E_SUCC);
+    syscall_set_retval1(tf, 0);
+    return;
 }

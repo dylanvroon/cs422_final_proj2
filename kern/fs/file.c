@@ -84,6 +84,7 @@ void file_close(struct file *f)
 int file_stat(struct file *f, struct file_stat *st)
 {
     if (f->type == FD_INODE) {
+        // KERN_DEBUG("13\n");
         inode_lock(f->ip);
         inode_stat(f->ip, st);
         inode_unlock(f->ip);
@@ -102,6 +103,7 @@ int file_read(struct file *f, char *addr, int n)
     if (f->readable == 0)
         return -1;
     if (f->type == FD_INODE) {
+        // KERN_DEBUG("11\n");
         inode_lock(f->ip);
         if ((r = inode_read(f->ip, addr, f->off, n)) > 0)
             f->off += r;
@@ -136,6 +138,7 @@ int file_write(struct file *f, char *addr, int n)
                 n1 = max;
 
             begin_trans();
+            // KERN_DEBUG("12\n");
             inode_lock(f->ip);
             if ((r = inode_write(f->ip, addr + i, f->off, n1)) > 0)
                 f->off += r;

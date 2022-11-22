@@ -73,12 +73,15 @@ void bigfile1(void)
         exit();
     }
 
+    // printf("max size: %d\n", MAXFILE);
+
     for (i = 0; i < MAXFILE; i++) {
         ((int *) buf)[0] = i;
         if (write(fd, buf, 512) != 512) {
             printf("error: write big file failed\n", i);
             exit();
         }
+        // printf("current buff addy: 0x%x | %d ", (unsigned int) buf, i);
     }
 
     close(fd);
@@ -106,6 +109,9 @@ void bigfile1(void)
             printf("read content of block %d is %d\n", n, ((int *) buf)[0]);
             exit();
         }
+        // else {
+        //     printf("success with this n: %d\n", n);
+        // }
         n++;
     }
     close(fd);
@@ -279,83 +285,102 @@ void subdir(void)
 
     printf("=====subdir test=====\n");
 
+    printf("1");
     unlink("ff");
     if (mkdir("dd") != 0) {
         printf("subdir mkdir dd failed\n");
         exit();
     }
-
+    printf("2");
     fd = open("dd/ff", O_CREATE | O_RDWR);
     if (fd < 0) {
         printf("create dd/ff failed\n");
         exit();
     }
+    printf("3");
     write(fd, "ff", 2);
+    printf("4");
     close(fd);
 
     if (unlink("dd") >= 0) {
         printf("unlink dd (non-empty dir) succeeded!\n");
         exit();
     }
+    printf("5");
 
     if (mkdir("dd/dd") != 0) {
         printf("subdir mkdir dd/dd failed\n");
         exit();
     }
+    printf("6");
 
     fd = open("dd/dd/ff", O_CREATE | O_RDWR);
+    printf("7");
     if (fd < 0) {
         printf("create dd/dd/ff failed\n");
         exit();
     }
 
     write(fd, "FF", 2);
+    printf("8");
     close(fd);
+    printf("9");
 
     fd = open("dd/dd/../ff", 0);
+    printf("10");
     if (fd < 0) {
         printf("open dd/dd/../ff failed\n");
         exit();
     }
     cc = read(fd, buf, sizeof(buf));
+    printf("11");
     if (cc != 2 || buf[0] != 'f') {
         printf("dd/dd/../ff wrong content\n");
         exit();
     }
     close(fd);
+    printf("12");
 
     if (link("dd/dd/ff", "dd/dd/ffff") != 0) {
         printf("link dd/dd/ff dd/dd/ffff failed\n");
         exit();
     }
+    printf("13");
 
     if (unlink("dd/dd/ff") != 0) {
         printf("unlink dd/dd/ff failed\n");
         exit();
     }
+    printf("14");
     if (open("dd/dd/ff", O_RDONLY) >= 0) {
         printf("open (unlinked) dd/dd/ff succeeded\n");
         exit();
     }
+    printf("15");
 
     if (chdir("dd") != 0) {
         printf("chdir dd failed\n");
         exit();
     }
+    printf("16");
     if (chdir("dd/../../dd") != 0) {
         printf("chdir dd/../../dd failed\n");
         exit();
     }
+    printf("17");
     if (chdir("dd/../../../dd") != 0) {
         printf("chdir dd/../../dd failed\n");
         exit();
     }
+    printf("18");
     if (chdir("./..") != 0) {
         printf("chdir ./.. failed\n");
         exit();
     }
+    printf("19");
 
     fd = open("dd/dd/ffff", 0);
+    printf("20");
     if (fd < 0) {
         printf("open dd/dd/ffff failed\n");
         exit();
@@ -364,45 +389,56 @@ void subdir(void)
         printf("read dd/dd/ffff wrong len\n");
         exit();
     }
+    printf("21");
     close(fd);
+    printf("22");
 
     if (open("dd/dd/ff", O_RDONLY) >= 0) {
         printf("open (unlinked) dd/dd/ff succeeded!\n");
         exit();
     }
+    printf("23");
 
     if (open("dd/ff/ff", O_CREATE | O_RDWR) >= 0) {
         printf("create dd/ff/ff succeeded!\n");
         exit();
     }
+    printf("24");
     if (open("dd/xx/ff", O_CREATE | O_RDWR) >= 0) {
         printf("create dd/xx/ff succeeded!\n");
         exit();
     }
+    printf("25");
     if (open("dd", O_CREATE) >= 0) {
         printf("create dd succeeded!\n");
         exit();
     }
+    printf("26");
     if (open("dd", O_RDWR) >= 0) {
         printf("open dd rdwr succeeded!\n");
         exit();
     }
+    printf("27");
     if (open("dd", O_WRONLY) >= 0) {
         printf("open dd wronly succeeded!\n");
         exit();
     }
+    printf("28");
     if (link("dd/ff/ff", "dd/dd/xx") == 0) {
         printf("link dd/ff/ff dd/dd/xx succeeded!\n");
         exit();
     }
+    printf("29");
     if (link("dd/xx/ff", "dd/dd/xx") == 0) {
         printf("link dd/xx/ff dd/dd/xx succeeded!\n");
         exit();
     }
+    printf("30");
     if (link("dd/ff", "dd/dd/ffff") == 0) {
         printf("link dd/ff dd/dd/ffff succeeded!\n");
         exit();
     }
+    printf("31");
     if (mkdir("dd/ff/ff") == 0) {
         printf("mkdir dd/ff/ff succeeded!\n");
         exit();
@@ -633,19 +669,25 @@ void iref(void)
             printf("mkdir irefd failed\n");
             exit();
         }
+        // printf("test1\n");
         if (chdir("irefd") != 0) {
             printf("chdir irefd failed\n");
             exit();
         }
-
+        // printf("test5\n");
         mkdir("");
+        // printf("test5.5\n");
         link("README", "");
+        // printf("test6\n");
         fd = open("", O_CREATE);
+        // printf("test7\n");
         if (fd >= 0)
             close(fd);
+        // printf("test 8\n");
         fd = open("xx", O_CREATE);
         if (fd >= 0)
             close(fd);
+        // printf("test9\n");
         unlink("xx");
     }
 

@@ -89,6 +89,8 @@ char *readline(const char *prompt)
     int i;
     char c;
 
+    dprintf("reached \n");
+
     if (prompt != NULL)
         dprintf("%s", prompt);
 

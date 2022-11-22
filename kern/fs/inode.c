@@ -135,6 +135,7 @@ void inode_lock(struct inode *ip)
     struct buf *bp;
     struct dinode *dip;
 
+    // KERN_DEBUG("trying to inode lock: %d\n", ip->inum);
     if (ip == 0 || ip->ref < 1)
         KERN_PANIC("inode_lock");
 
@@ -159,6 +160,8 @@ void inode_lock(struct inode *ip)
             KERN_PANIC("inode_lock: no type");
     }
 
+    // KERN_DEBUG("successfully inode locked: %d\n", ip->inum);
+
 }
 
 /**
@@ -166,9 +169,19 @@ void inode_lock(struct inode *ip)
  */
 void inode_unlock(struct inode *ip)
 {
-    if (ip == 0 || !(ip->flags & I_BUSY) || ip->ref < 1)
-        KERN_PANIC("inode_unlock");
+    // KERN_DEBUG("inode unlocked: %d\n", ip->inum);
 
+    if (ip == 0 || !(ip->flags & I_BUSY) || ip->ref < 1) {
+        // if (ip == 0) {
+        //     KERN_DEBUG("ip 0 :");
+        //     KERN_PANIC("inode_unlock\n");
+        // } else if (ip->ref < 1) {
+        //     KERN_DEBUG("ip ref < 1");
+        // } else {
+        //     KERN_DEBUG("flag not busy");
+        // }
+        KERN_PANIC("inode_unlock\n");
+    }
     spinlock_acquire(&inode_cache.lock);
     ip->flags &= ~I_BUSY;
     thread_wakeup(ip);
@@ -229,22 +242,30 @@ static uint32_t bmap(struct inode *ip, uint32_t bn)
     uint32_t addr, *a;
     struct buf *bp;
 
+    
+
     if (bn < NDIRECT) {
-        if ((addr = ip->addrs[bn]) == 0)
+        if ((addr = ip->addrs[bn]) == 0) {
             ip->addrs[bn] = addr = block_alloc(ip->dev);
+            // KERN_DEBUG("allocating block at bn: %d\n", bn);
+        }
+        
         return addr;
     }
     bn -= NDIRECT;
 
     if (bn < NINDIRECT) {
         // Load indirect block, allocating if necessary.
-        if ((addr = ip->addrs[NDIRECT]) == 0)
+        if ((addr = ip->addrs[NDIRECT]) == 0) {
             ip->addrs[NDIRECT] = addr = block_alloc(ip->dev);
+            // KERN_DEBUG("allocating ind block at bn: %d\n", bn + NDIRECT);
+        }
         bp = bufcache_read(ip->dev, addr);
         a = (uint32_t *) bp->data;
         if ((addr = a[bn]) == 0) {
             a[bn] = addr = block_alloc(ip->dev);
             log_write(bp);
+            // KERN_DEBUG("allocating cache block at bn: %d\n", bn + NDIRECT);
         }
         bufcache_release(bp);
         return addr;

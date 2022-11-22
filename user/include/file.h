@@ -48,11 +48,12 @@ struct file {
 #define read(fd, str, n)  sys_read((fd), (str), (n))
 #define write(fd, str, n) sys_write((fd), (str), (n))
 #define close(fd)         sys_close((fd))
-#define fstat(fd)         sys_fstat((fd))
+#define fstat(fd)         sys_fstat((fd), (stat))
 #define link(old, new)    sys_link((old), (new))
 #define unlink(path)      sys_unlink((path))
 #define open(path, omode) sys_open((path), (omode))
 #define mkdir(path)       sys_mkdir((path))
 #define chdir(path)       sys_chdir((path))
+#define readlin(dst)      sys_readlin((dst))
 
 #endif  /* !_USER_FILE_H_ */

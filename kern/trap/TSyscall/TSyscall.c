@@ -58,6 +58,7 @@ extern uint8_t _binary___obj_user_pingpong_ping_start[];
 extern uint8_t _binary___obj_user_pingpong_pong_start[];
 extern uint8_t _binary___obj_user_pingpong_ding_start[];
 extern uint8_t _binary___obj_user_fstest_fstest_start[];
+extern uint8_t _binary___obj_user_pingpong_shell_start[];
 
 /**
  * Spawns a new child process.
@@ -86,6 +87,8 @@ void sys_spawn(tf_t *tf)
 
     elf_id = syscall_get_arg2(tf);
     quota = syscall_get_arg3(tf);
+
+    KERN_DEBUG("elf_id and quota: %d, %d \n", elf_id, quota);
 
     if (!container_can_consume(curid, quota)) {
         syscall_set_errno(tf, E_EXCEEDS_QUOTA);
@@ -116,6 +119,9 @@ void sys_spawn(tf_t *tf)
     case 4:
         elf_addr = _binary___obj_user_fstest_fstest_start;
         break;
+    case 5:
+        elf_addr = _binary___obj_user_pingpong_shell_start;
+        break;
     default:
         syscall_set_errno(tf, E_INVAL_PID);
         syscall_set_retval1(tf, NUM_IDS);
@@ -141,6 +147,7 @@ void sys_spawn(tf_t *tf)
  */
 void sys_yield(tf_t *tf)
 {
+    // KERN_DEBUG("Thread yielded");
     thread_yield();
     syscall_set_errno(tf, E_SUCC);
 }
