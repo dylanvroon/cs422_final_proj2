@@ -8,6 +8,15 @@
 #define VM_USERLO_PI (VM_USERLO / PAGESIZE)
 #define VM_USERHI_PI (VM_USERHI / PAGESIZE)
 
+unsigned int get_log2(unsigned int start) {
+    unsigned int count = 0;
+    while (start > 1) {
+        start /= 2;
+        count++;
+    }
+    return count;
+}
+
 /**
  * The initialization function for the allocation table AT.
  * It contains two major parts:
@@ -23,6 +32,10 @@ void pmem_init(unsigned int mbi_addr)
     unsigned int nps;
     unsigned int pg_idx, pmmap_size, cur_addr, highest_addr;
     unsigned int entry_idx, flag, isnorm, start, len;
+    unsigned int max_block_size = 0;
+    unsigned int curr_block_size = 0;
+    unsigned int max_start = 0;
+    unsigned int curr_start = 0;
 
     // Calls the lower layer initialization primitive.
     // The parameter mbi_addr should not be used in the further code.
@@ -92,10 +105,24 @@ void pmem_init(unsigned int mbi_addr)
 
             if (flag && isnorm) {
                 at_set_perm(pg_idx, 2);
+                if (curr_block_size == 0) {
+                    curr_start = pg_idx;
+                }
+                curr_block_size++;
+                if (curr_block_size > max_block_size) {
+                    max_block_size = curr_block_size;
+                    max_start = curr_start;
+                }
             } else {
                 at_set_perm(pg_idx, 0);
+                curr_block_size = 0;
+                curr_start = 0;
             }
         }
         pg_idx++;
     }
+
+    KERN_DEBUG("max block size: %u\n", max_block_size);
+    KERN_DEBUG("max block start: %u\n", max_start);
+    KERN_DEBUG("test count: %d\n", get_log2(max_block_size));
 }

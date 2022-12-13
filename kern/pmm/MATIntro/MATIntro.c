@@ -25,12 +25,25 @@ struct ATStruct {
     unsigned int allocated;
 };
 
+struct BuddyBlock {
+    unsigned int size;
+    unsigned int start_index;
+    unsigned int next_index;
+};
+
 /**
  * A 32 bit machine may have up to 4GB of memory.
  * So it may have up to 2^20 physical pages,
  * with the page size being 4KB.
  */
 static struct ATStruct AT[1 << 20];
+
+
+/** 
+ * through testing, we found 2^17 to be the largest consecutive part of memory
+ * we reduce the size in practice if there happens to be a smaller part of consecutive memory
+ */
+static struct BuddyBlock BB[1 << 17];
 
 void mem_spinlock_init(void) {
     spinlock_init(&mem_lk);
