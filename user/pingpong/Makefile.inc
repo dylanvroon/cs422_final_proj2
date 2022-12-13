@@ -17,15 +17,10 @@ USER_DING_OBJ := $(patsubst %.c, $(OBJDIR)/%.o, $(USER_DING_SRC))
 USER_DING_OBJ := $(patsubst %.S, $(OBJDIR)/%.o, $(USER_DING_OBJ))
 KERN_BINFILES += $(USER_OBJDIR)/pingpong/ding
 
-USER_SHELL_SRC += $(USER_DIR)/pingpong/shell.c
-USER_SHELL_OBJ := $(patsubst %.c, $(OBJDIR)/%.o, $(USER_SHELL_SRC))
-USER_SHELL_OBJ := $(patsubst %.S, $(OBJDIR)/%.o, $(USER_SHELL_OBJ))
-KERN_BINFILES += $(USER_OBJDIR)/pingpong/shell
 
 pingpong: $(USER_OBJDIR)/pingpong/ping \
           $(USER_OBJDIR)/pingpong/pong \
           $(USER_OBJDIR)/pingpong/ding \
-		  $(USER_OBJDIR)/pingpong/shell \
 
 $(USER_OBJDIR)/pingpong/ping: $(USER_LIB_OBJ) $(USER_PING_OBJ)
 	@echo + ld[USER/ping] $@
@@ -51,13 +46,6 @@ $(USER_OBJDIR)/pingpong/ding: $(USER_LIB_OBJ) $(USER_DING_OBJ)
 	$(V)$(OBJDUMP) -S $@ > $@.asm
 	$(V)$(NM) -n $@ > $@.sym
 
-$(USER_OBJDIR)/pingpong/shell: $(USER_LIB_OBJ) $(USER_SHELL_OBJ)
-	@echo + ld[USER/shell] $@
-	$(V)$(LD) -o $@ $(USER_LDFLAGS) $(USER_LIB_OBJ) $(USER_SHELL_OBJ) $(GCC_LIBS)
-	mv $@ $@.bak
-	$(V)$(OBJCOPY) --remove-section .note.gnu.property $@.bak $@
-	$(V)$(OBJDUMP) -S $@ > $@.asm
-	$(V)$(NM) -n $@ > $@.sym
 
 $(USER_OBJDIR)/pingpong/%.o: $(USER_DIR)/pingpong/%.c
 	@echo + cc[USER/pingpong] $<

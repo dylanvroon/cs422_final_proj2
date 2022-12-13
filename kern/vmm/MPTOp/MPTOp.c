@@ -67,6 +67,7 @@ void set_pdir_entry_by_va_super(unsigned int proc_index, unsigned int vaddr, uns
     set_pdir_entry_super(proc_index, PDE_ADDR(vaddr), page_index, perm);
 }
 
+
 // Initializes the identity page table.
 // The permission for the kernel memory should be PTE_P, PTE_W, and PTE_G,
 // While the permission for the rest should be PTE_P and PTE_W.

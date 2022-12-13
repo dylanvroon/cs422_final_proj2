@@ -4,6 +4,7 @@
 #ifdef _KERN_
 
 unsigned int container_alloc(unsigned int id);
+unsigned int container_alloc_multi(unsigned int id, unsigned int size);
 unsigned int container_split(unsigned int id, unsigned int quota);
 unsigned int map_page(unsigned int proc_index, unsigned int vaddr,
                       unsigned int page_index, unsigned int perm);
