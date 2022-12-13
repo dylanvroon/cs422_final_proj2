@@ -60,6 +60,11 @@ void set_pdir_entry(unsigned int proc_index, unsigned int pde_index,
     PDirPool[proc_index][pde_index] = (unsigned int *) (addr | PT_PERM_PTU);
 }
 
+void set_pdir_entry_super(unsigned int proc_index, unsigned int pde_index, unsigned int page_index, unsigned int perm) {
+    unsigned int addr = page_index << 12;
+    PDirPool[proc_index][pde_index] = (unsigned int *) (addr | PT_PERM_PTU | PTE_PS | perm);
+}
+
 // Sets the page directory entry # [pde_index] for the process # [proc_index]
 // with the initial address of page directory # [pde_index] in IDPTbl.
 // You should also set the permissions PTE_P, PTE_W, and PTE_U.

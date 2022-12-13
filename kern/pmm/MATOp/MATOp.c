@@ -62,6 +62,49 @@ unsigned int palloc()
     return palloc_free_index;
 }
 
+unsigned int palloc_multi(unsigned int size)
+{
+    unsigned int nps;
+    unsigned int palloc_index;
+    unsigned int palloc_free_index;
+    unsigned int count = 0;
+    bool first;
+    bool found = FALSE;
+
+    nps = get_nps();
+    palloc_index = last_palloc_index;
+    palloc_free_index = nps;
+    while ((palloc_index != last_palloc_index || first) && !found) {
+        first = FALSE;
+        if (at_is_norm(palloc_index) && !at_is_allocated(palloc_index)) {
+            if (count == 0) {
+                palloc_free_index = palloc_index;
+            }
+            if (++count == size) {
+                found = TRUE;
+            }
+        }
+        palloc_index++;
+        if (palloc_index >= VM_USERHI_PI) {
+            palloc_index = VM_USERLO_PI;
+            count = 0;
+        }
+    }
+
+    if (found) {
+        for (count = 0; count < size; count++) {
+            at_set_allocated(palloc_free_index + count, 1);
+        }
+        last_palloc_index = palloc_free_index + count;
+    } else {
+        palloc_free_index = 0;
+        last_palloc_index = VM_USERLO_PI;
+    }
+
+    return palloc_free_index;
+}
+
+
 /**
  * Free a physical page.
  *

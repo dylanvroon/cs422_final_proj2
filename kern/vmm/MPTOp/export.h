@@ -6,6 +6,7 @@
 unsigned int get_pdir_entry_by_va(unsigned int proc_index, unsigned int vaddr);
 void set_pdir_entry_by_va(unsigned int proc_index, unsigned int vaddr,
                           unsigned int page_index);
+void set_pdir_entry_by_va_super(unsigned int proc_index, unsigned int vaddr, unsigned int page_index);
 void rmv_pdir_entry_by_va(unsigned int proc_index, unsigned int vaddr);
 unsigned int get_ptbl_entry_by_va(unsigned int proc_index, unsigned int vaddr);
 void set_ptbl_entry_by_va(unsigned int proc_index, unsigned int vaddr,

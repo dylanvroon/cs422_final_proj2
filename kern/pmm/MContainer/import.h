@@ -8,6 +8,7 @@ unsigned int at_is_norm(unsigned int page_index);
 unsigned int at_is_allocated(unsigned int page_index);
 void pmem_init(unsigned int mbi_addr);
 unsigned int palloc(void);
+unsigned int palloc_multi(unsigned int size);
 void pfree(unsigned int pfree_index);
 
 #endif  /* _KERN_ */

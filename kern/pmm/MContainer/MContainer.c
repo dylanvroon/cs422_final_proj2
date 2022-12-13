@@ -142,6 +142,23 @@ unsigned int container_alloc(unsigned int id)
     return page_index;
 }
 
+//TODO container_alloc_multi()
+
+unsigned int container_alloc_multi(unsigned int id, unsigned int size) {
+    unsigned int page_index = 0;
+
+    spinlock_acquire(&container_lks[id]);
+
+    if (CONTAINER[id].usage + size <= CONTAINER[id].quota) {
+        CONTAINER[id].usage += size;
+        page_index = palloc_multi(size);
+    }
+
+    spinlock_release(&container_lks[id]);
+
+    return page_index;
+}
+
 // Frees the physical page and reduces the usage by 1.
 void container_free(unsigned int id, unsigned int page_index)
 {

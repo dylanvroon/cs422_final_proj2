@@ -51,6 +51,55 @@ unsigned int map_page(unsigned int proc_index, unsigned int vaddr,
     return pde_page_index;
 }
 
+//TODO map_multipage
+unsigned int map_page_multi(unsigned int proc_index, unsigned int vaddr,
+                      unsigned int page_index, unsigned int perm, unsigned int size) 
+{
+    unsigned int pde_entry;
+    unsigned int pde_page_index;
+    unsigned int ret_page_index;
+    unsigned int curr_vaddr;
+    bool first = TRUE;
+
+    for (curr_vaddr = vaddr; curr_vaddr < vaddr + size*PAGESIZE; curr_vaddr++) {
+        
+        pde_entry = get_pdir_entry_by_va(proc_index, vaddr);
+        pde_page_index = pde_entry >> 12;
+        if (pde_entry == 0) {
+            pde_page_index = alloc_ptbl(proc_index, vaddr);
+            if (pde_page_index == 0) {
+                return MagicNumber;
+            }
+        }
+        if (first) {
+            ret_page_index = pde_page_index;
+            first = FALSE;
+        }
+    }
+
+    return ret_page_index;
+
+}
+
+//TODO map_superpage
+unsigned int map_page_super(unsigned int proc_index, unsigned int vaddr,
+                      unsigned int page_index, unsigned int perm) 
+{
+    unsigned int pde_entry = get_pdir_entry_by_va(proc_index, vaddr);
+    unsigned int pde_page_index = pde_entry >> 12;
+
+    if (pde_entry == 0) {
+        // No need to deal with page tables, just make directory
+        set_pdir_entry_by_va_super(proc_index, vaddr, page_index, perm);
+    }
+    else { 
+        return MagicNumber; // Need to assume going in from brk/pagefault or whatever that input vaddr corresponds to pdir entry
+    }
+    // This shouldn't be necessary actually
+    // set_ptbl_entry_by_va_super(proc_index, vaddr, page_index, perm);
+    return pde_page_index;    
+}
+
 /**
  * Remove the mapping for the given virtual address (with rmv_ptbl_entry_by_va).
  * You need to first make sure that the mapping is still valid,
@@ -67,3 +116,22 @@ unsigned int unmap_page(unsigned int proc_index, unsigned int vaddr)
     }
     return pte_entry;
 }
+
+// Return void or return value of first segment? 
+unsigned int unmap_page_super(unsigned int proc_index, unsigned int vaddr)
+{
+    unsigned int pde_entry = get_pdir_entry_by_va(proc_index, vaddr);
+    if (pde_entry != 0) {
+        rmv_pdir_entry_by_va(proc_index, vaddr);
+    }
+
+    return pde_entry;
+}
+
+
+
+
+
+
+
+

@@ -10,6 +10,8 @@ void set_pdir_entry_identity(unsigned int proc_index, unsigned int pde_index);
 void rmv_pdir_entry(unsigned int proc_index, unsigned int pde_index);
 void set_pdir_entry(unsigned int proc_index, unsigned int pde_index,
                     unsigned int page_index);
+void set_pdir_entry_super(unsigned int proc_index, unsigned int pde_index,
+                    unsigned int page_index, unsigned int perm);                    
 unsigned int get_ptbl_entry(unsigned int proc_index, unsigned int pde_index,
                             unsigned int pte_index);
 void set_ptbl_entry(unsigned int proc_index, unsigned int pde_index,

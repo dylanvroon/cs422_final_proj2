@@ -11,6 +11,7 @@ unsigned int container_get_usage(unsigned int id);
 unsigned int container_can_consume(unsigned int id, unsigned int n);
 unsigned int container_split(unsigned int id, unsigned int quota);
 unsigned int container_alloc(unsigned int id);
+unsigned int container_alloc_multi(unsigned int id, unsigned int size);
 void container_free(unsigned int id, unsigned int page_index);
 
 #endif  /* _KERN_ */

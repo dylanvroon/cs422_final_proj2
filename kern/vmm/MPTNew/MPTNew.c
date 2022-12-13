@@ -24,6 +24,31 @@ unsigned int alloc_page(unsigned int proc_index, unsigned int vaddr,
     }
 }
 
+//TODO alloc_multipage
+unsigned int alloc_page_multi(unsigned int proc_index, unsigned int vaddr,
+                        unsigned int perm, unsigned int size)
+{
+    unsigned int page_index = container_alloc_multi(proc_index, size);
+    if (page_index != 0) {
+        return map_page_multi(proc_index, vaddr, page_index, perm);
+    } else {
+        return MagicNumber;
+    }
+}
+
+//TODO alloc_superpage
+unsigned int alloc_page_super(unsigned int proc_index, unsigned int vaddr,
+                        unsigned int perm)
+{
+    unsigned int page_index = container_alloc_multi(proc_index, SUPERPAGE_SIZE);
+    if (page_index != 0) {
+        return map_page_super(proc_index, vaddr, page_index, perm);
+    } else {
+        return MagicNumber;
+    }
+}
+
+
 /**
  * Designate some memory quota for the next child process.
  */
