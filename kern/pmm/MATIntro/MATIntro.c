@@ -140,10 +140,12 @@ unsigned int get_bb_offset(void) {
 }
 
 void set_bb_total_size(unsigned int size) {
-    if (size > 1>> 17) {
-        size = 1>>17;
+    KERN_DEBUG("size: %u\n", size);
+    if (size > (1 << 17)) {
+        size = 1<<17;
     }
     BB_SIZE = size;
+    KERN_DEBUG("BB_SIZE: %u\n", BB_SIZE);
 }
 
 unsigned int get_bb_total_size(void) {
@@ -195,6 +197,6 @@ void bb_split(unsigned int page_index) {
     }
     unsigned int new_pi = BB[page_index].size/2 + page_index;
     BB[page_index].size = BB[page_index].size/2;
-    BB[new_pi].size = BB[page_index].size/2;
+    BB[new_pi].size = BB[page_index].size;
 }
 

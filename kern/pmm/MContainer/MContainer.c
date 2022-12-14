@@ -151,11 +151,17 @@ unsigned int container_alloc_multi(unsigned int id, unsigned int size) {
 
     if (CONTAINER[id].usage + size <= CONTAINER[id].quota) {
         CONTAINER[id].usage += size;
+<<<<<<< HEAD
         if (size <= 1025) {
+=======
+        if (size <= 1023) {
+>>>>>>> 1852f780 (hvubwiouvb)
             page_index = palloc_multi(size);
         } else {
             page_index = palloc_multi_bb(size);
         }
+    } else {
+        KERN_DEBUG("exceeded quota in sys_brk call for size: %u (current usage, max quota: %u, %u)\n", size, CONTAINER[id].usage,CONTAINER[id].quota);
     }
 
     spinlock_release(&container_lks[id]);

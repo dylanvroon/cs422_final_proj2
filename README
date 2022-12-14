@@ -10,5 +10,6 @@ To use sample lab 1 solutions: copy files in samples/ to appropriate directories
 List here the following info:
 1. Dylan Vroon and Evan Schott
 2. We coded this assignment together
-3. We implemented parts 1 through 3, and made the shell process (without exercise 17). 
-Hopefully we will finish part 4 but for now it is unfinished.
+
+Description of final project:
+For the final project, we decided to implement prompt 10: dynamically allocated memory. We split this project into multiple parts. First we implemented the ability for the user to allocate pages with the syscall brk. Initially, brk only allocated 1 page at a time using the already implemented functions

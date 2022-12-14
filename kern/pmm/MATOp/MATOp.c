@@ -121,32 +121,55 @@ unsigned int palloc_multi_bb(unsigned int size) {
     unsigned int count;
     unsigned int min_up_size;
     unsigned int min_up_index;
+    unsigned int testing_count = 0;
 
     
     mem_lock();
     if (size != get_log2(size)) {
         size = 1 << (get_log2(size) + 1);
     }
+    KERN_DEBUG("got here\n");
+    // KERN_DEBUG("get_bb_total size: %u\n", get_bb_total_size());
+    KERN_DEBUG("goal size: %u\n", size);
     while(TRUE) {
+        testing_count++;
         count = 0;
-        min_up_size = 0;
+        min_up_size = get_bb_total_size() + 1;
         min_up_index = get_bb_total_size() + 1;
         while(count < get_bb_total_size()) {
+            testing_count++;
+            // if (testing_count > 50) {
+            //     mem_unlock();
+            //     return 0;
+            // }
+            KERN_DEBUG("\n ----- count: %u\n", count);
+            KERN_DEBUG("bb size of count: %u\n", bb_get_size(count));
+            KERN_DEBUG("min_up_size: %u\n", min_up_size);
+            // KERN_DEBUG("current size: %u\n", size);
+            KERN_DEBUG("is used? %u\n", bb_get_used(count));
             if (bb_get_size(count) == size && bb_get_used(count) == 0) {
+                // KERN_DEBUG("got here?onvgojqbeovbnqoeno\n");
                 bb_set_used(count,1);
                 mem_unlock();
+                KERN_DEBUG("\n\ncount: %u\n", count);
+                KERN_DEBUG("get result: %u\n", get_bb_offset() + count);
                 return count + get_bb_offset();
             }
+            
             if ((bb_get_size(count) < min_up_size) && (bb_get_size(count) > size) && (bb_get_used(count) == 0)) {
                 min_up_size = bb_get_size(count);
                 min_up_index = count;
             }
             count += bb_get_size(count);
         }
+        KERN_DEBUG("min_up_size: %u\n", min_up_size);
+        KERN_DEBUG("Min up index: %u\n", min_up_index);
         if (min_up_index > get_bb_total_size()) {
             mem_unlock();
             return 0;
         }
+        
+        // KERN_DEBUG("Min up size: %u\n", min_up_size);
         bb_split(min_up_index);
     }
 

@@ -122,17 +122,19 @@ void pmem_init(unsigned int mbi_addr)
         pg_idx++;
     }
 
-    //finds longest contiguous block of memory and makes a buddy block system with that size rounded down to nearest power of 2
+    //finds longest contiguous block of memory and makes
+    // a buddy block system with that size rounded down to nearest power of 2
     //mark these parts of memory as unavailable
 
     unsigned int block_expo = get_log2(max_block_size);
-    set_bb_total_size(1 >> block_expo);
+    set_bb_total_size(1 << block_expo);
     set_bb_offset(max_start);
     bb_set_size(0, get_bb_total_size());
     bb_set_used(0, 0);
+    at_set_perm(get_bb_offset(), 0);
     for (unsigned int i = 1; i < get_bb_total_size(); i++) { 
-        bb_set_size(0, 0);
-        bb_set_used(0, 0);
+        bb_set_size(i, 0);
+        bb_set_used(i, 0);
         at_set_perm(i + get_bb_offset(), 0);
     }
     

@@ -1,4 +1,5 @@
 #include <lib/x86.h>
+#include <lib/debug.h>
 
 #include "import.h"
 
@@ -30,6 +31,7 @@ unsigned int alloc_page_multi(unsigned int proc_index, unsigned int vaddr,
 {
     unsigned int page_index = container_alloc_multi(proc_index, size);
     if (page_index != 0) {
+        KERN_DEBUG("page_index multi: %u\n", page_index);
         return map_page_multi(proc_index, vaddr, page_index, perm);
     } else {
         return MagicNumber;
@@ -42,8 +44,10 @@ unsigned int alloc_page_super(unsigned int proc_index, unsigned int vaddr,
 {
     unsigned int page_index = container_alloc_multi(proc_index, 1024);
     if (page_index != 0) {
+        KERN_DEBUG("page_index super: %u\n", page_index);
         return map_page_super(proc_index, vaddr, page_index, perm);
     } else {
+        // KERN_DEBUG("fucked up at alloc_page_super\n");
         return MagicNumber;
     }
 }

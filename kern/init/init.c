@@ -29,7 +29,7 @@ static void kern_main(void)
     int cpu_idx = get_pcpu_idx();
     unsigned int pid;
 
-    pid = proc_create(_binary___obj_user_idle_idle_start, 10000);
+    pid = proc_create(_binary___obj_user_idle_idle_start, 100000);
     KERN_INFO("CPU%d: process shell %d is created.\n", cpu_idx, pid);
     tqueue_remove(NUM_IDS, pid);
     tcb_set_state(pid, TSTATE_RUN);

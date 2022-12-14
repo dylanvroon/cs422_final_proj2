@@ -93,6 +93,7 @@ unsigned int map_page_super(unsigned int proc_index, unsigned int vaddr,
         set_pdir_entry_by_va_super(proc_index, vaddr, page_index, perm);
     }
     else { 
+        KERN_DEBUG("invalid vaddr for allocating a super page on break\n");
         return MagicNumber; // Need to assume going in from brk/pagefault or whatever that input vaddr corresponds to pdir entry
     }
     // This shouldn't be necessary actually

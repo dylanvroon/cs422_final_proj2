@@ -9,7 +9,7 @@ int main(int argc, char **argv)
 
     pid_t fstest_pid;
 
-    if ((fstest_pid = spawn(4, 2000)) != -1)
+    if ((fstest_pid = spawn(4, 20000)) != -1)
         printf("fstest in process %d.\n", fstest_pid);
     else
         printf("Failed to launch fstest.\n");
