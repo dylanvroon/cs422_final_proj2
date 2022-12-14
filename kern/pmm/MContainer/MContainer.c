@@ -151,7 +151,7 @@ unsigned int container_alloc_multi(unsigned int id, unsigned int size) {
 
     if (CONTAINER[id].usage + size <= CONTAINER[id].quota) {
         CONTAINER[id].usage += size;
-        if (size <= 4) {
+        if (size <= 1025) {
             page_index = palloc_multi(size);
         } else {
             page_index = palloc_multi_bb(size);
@@ -177,3 +177,28 @@ void container_free(unsigned int id, unsigned int page_index)
 
     spinlock_release(&container_lks[id]);
 }
+
+void container_free_multi(unsigned int id, unsigned int page_index, unsigned int n)
+{
+    spinlock_acquire(&container_lks[id]);
+
+    if (at_is_allocated(page_index)) {
+        pfree_bb(page_index);
+        if (CONTAINER[id].usage > n) {
+            CONTAINER[id].usage -= n;
+        }
+    }
+
+    spinlock_release(&container_lks[id]);
+}
+
+
+
+
+
+
+
+
+
+
+

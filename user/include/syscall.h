@@ -223,6 +223,23 @@ static gcc_inline int sys_brk(void *addr, unsigned int n)
    return errno ? -1 : 0;
 }
 
+static gcc_inline int sys_free(void *addr, unsigned int n)
+{
+   int errno, ret;
+
+    asm volatile ("int %2"
+                  : "=a" (errno), "=b" (ret)
+                  : "i" (T_SYSCALL),
+                     "a" (SYS_free),
+                     "b" (addr),
+                     "c" (n)
+                  : "cc", "memory");
+
+   return errno ? -1 : 0;
+}
+
+
+
 
 
 

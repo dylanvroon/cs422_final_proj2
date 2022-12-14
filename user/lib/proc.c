@@ -16,3 +16,8 @@ int brk(void *addr, unsigned int n)
 {
     return sys_brk(addr, n);
 }
+
+int free(void *addr, unsigned int n)
+{
+    return sys_free(addr, n);
+}

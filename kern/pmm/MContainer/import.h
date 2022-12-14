@@ -11,6 +11,7 @@ unsigned int palloc(void);
 unsigned int palloc_multi(unsigned int size);
 unsigned int palloc_multi_bb(unsigned int size);
 void pfree(unsigned int pfree_index);
+void pfree_bb(unsigned int pfree_index);
 
 #endif  /* _KERN_ */
 

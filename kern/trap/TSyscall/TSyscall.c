@@ -180,6 +180,34 @@ void sys_brk(tf_t *tf)
     }
 }
 
+void sys_free(tf_t *tf) {
+    unsigned int n;
+    unsigned int vaddr; 
+    unsigned int ret;
+    unsigned int cur_pid;
+
+    cur_pid = get_curid();
+    vaddr = (unsigned int) syscall_get_arg2(tf);
+    n = syscall_get_arg3(tf);
+
+    free_page_multi(cur_pid, vaddr, n); 
+    syscall_set_errno(tf, E_SUCC);
+    syscall_set_retval1(tf, 0);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

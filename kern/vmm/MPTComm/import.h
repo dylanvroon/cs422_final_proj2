@@ -5,6 +5,7 @@
 
 unsigned int container_alloc(unsigned int id);
 void container_free(unsigned int id, unsigned int page_index);
+void container_free_multi(unsigned int id, unsigned int page_index, unsigned int n);
 void idptbl_init(unsigned int mbi_addr);
 void set_pdir_entry_identity(unsigned int proc_index, unsigned int pde_index);
 void rmv_pdir_entry(unsigned int proc_index, unsigned int pde_index);
@@ -14,6 +15,8 @@ unsigned int get_pdir_entry_by_va(unsigned int proc_index, unsigned int vaddr);
 void rmv_pdir_entry_by_va(unsigned int proc_index, unsigned int vaddr);
 void set_pdir_entry_by_va(unsigned int proc_index, unsigned int vaddr,
                           unsigned int page_index);
+
+unsigned int unmap_page(unsigned int proc_index, unsigned int vaddr);
 
 #endif  /* _KERN_ */
 

@@ -6,6 +6,7 @@
 void pdir_init(unsigned int mbi_addr);
 unsigned int alloc_ptbl(unsigned int proc_index, unsigned int vaddr);
 void free_ptbl(unsigned int proc_index, unsigned int vaddr);
+void free_page_multi(unsigned int proc_index, unsigned int vaddr, unsigned int n);
 
 #endif  /* _KERN_ */
 

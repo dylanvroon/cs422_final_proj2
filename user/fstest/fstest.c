@@ -741,9 +741,13 @@ void bigdir(void)
 int main(int argc, char *argv[])
 {
     printf("no tests\n");
-    void *vaddr = (void *) (10*4194304);
-    int ret = brk(vaddr, 0);
-    printf("ret value: %d\n", ret);    
+    void *vaddr = (void *) (750*4194304);
+    int ret = brk(vaddr, 111);
+    printf("ret value: %d\n", ret);  
+    *((int*)vaddr)=100;  
+    *((int*)(vaddr + 4096*1000))=1221;
+    *((int*)(vaddr + 4096*1025))=1221;
+
 
 
     // for (int i = 10; i < 100; i++) {

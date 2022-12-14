@@ -68,3 +68,34 @@ void free_ptbl(unsigned int proc_index, unsigned int vaddr)
     rmv_pdir_entry(proc_index, PDE_ADDR(vaddr));
     container_free(proc_index, page_index);
 }
+
+void free_page_multi(unsigned int proc_index, unsigned int vaddr, unsigned int n) 
+{
+    unsigned int page_index;
+    unsigned int i;
+    if (n == 0) 
+    {
+        page_index = get_pdir_entry_by_va(proc_index, vaddr) >> 12;
+        rmv_pdir_entry(proc_index, PDE_ADDR(vaddr));
+        container_free_multi(proc_index, page_index, n);
+    }
+    else 
+    {
+        // n < 1024 so can only go to two different page directories
+        page_index = get_pdir_entry_by_va(proc_index, vaddr) >> 12;
+        for (i = 0; i < n; i++) {
+            unmap_page(proc_index, vaddr+PAGESIZE);
+        }
+        rmv_pdir_entry(proc_index, PDE_ADDR(vaddr));
+        container_free_multi(proc_index, page_index, n);
+    }
+}
+
+
+
+
+
+
+
+
+

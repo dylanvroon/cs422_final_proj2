@@ -26,6 +26,8 @@ void thread_yield(void);
 unsigned int alloc_page_super(unsigned int proc_index, unsigned int vaddr, unsigned int perm);
 unsigned int alloc_page_multi(unsigned int proc_index, unsigned int vaddr, unsigned int perm, unsigned int size);
 
+void free_page_multi(unsigned int proc_index, unsigned int vaddr, unsigned int n);
+
 
 #endif  /* _KERN_ */
 

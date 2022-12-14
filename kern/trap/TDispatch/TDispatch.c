@@ -65,6 +65,9 @@ void syscall_dispatch(tf_t *tf)
     case SYS_brk:
         sys_brk(tf);
         break;
+    case SYS_free:
+        sys_free(tf);
+        break;
 
     /** Filesystem calls **/
     case SYS_open:

@@ -92,7 +92,7 @@ unsigned int palloc_multi(unsigned int size)
             if (++count >= size) {
                 found = TRUE;
             }
-            KERN_DEBUG("count: %d\n", count);
+            // KERN_DEBUG("count: %d\n", count);
         }
         palloc_index++;
         if (palloc_index >= VM_USERHI_PI) {

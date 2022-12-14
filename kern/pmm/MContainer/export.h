@@ -13,6 +13,7 @@ unsigned int container_split(unsigned int id, unsigned int quota);
 unsigned int container_alloc(unsigned int id);
 unsigned int container_alloc_multi(unsigned int id, unsigned int size);
 void container_free(unsigned int id, unsigned int page_index);
+void container_free_multi(unsigned int id, unsigned int page_index, unsigned int n);
 
 #endif  /* _KERN_ */
 
