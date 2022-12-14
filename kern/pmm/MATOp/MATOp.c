@@ -76,13 +76,13 @@ unsigned int palloc_multi(unsigned int size)
     nps = get_nps();
     palloc_index = last_palloc_index;
     palloc_free_index = nps;
-    while ((palloc_index != last_palloc_index || first) && !found) {
+    while ((palloc_index != last_palloc_index || first) && found == FALSE) {
         first = FALSE;
         if (at_is_norm(palloc_index) && !at_is_allocated(palloc_index)) {
             if (count == 0) {
                 palloc_free_index = palloc_index;
             }
-            if (++count == size) {
+            if (++count >= size) {
                 found = TRUE;
             }
         }
