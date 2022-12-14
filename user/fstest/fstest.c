@@ -742,7 +742,7 @@ int main(int argc, char *argv[])
 {
     printf("no tests\n");
     void *vaddr = (void *) (10*4194304);
-    int ret = brk(vaddr, 2);
+    int ret = brk(vaddr, 0);
     printf("ret value: %d\n", ret);    
 
 

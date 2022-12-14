@@ -72,12 +72,19 @@ unsigned int palloc_multi(unsigned int size)
     bool found = FALSE;
 
     mem_lock();
+    KERN_DEBUG("check1\n");
 
     nps = get_nps();
     palloc_index = last_palloc_index;
     palloc_free_index = nps;
+    first = TRUE;
+    // KERN_DEBUG(found ? "true\n":"false\n");
+    // KERN_DEBUG("Palloc index: %u\n", palloc_index);
+    // KERN_DEBUG("Last Palloc index: %u\n", last_palloc_index);
+    // KERN_DEBUG("Palloc index: %u\n", palloc_index);
     while ((palloc_index != last_palloc_index || first) && found == FALSE) {
         first = FALSE;
+        // KERN_DEBUG("check2\n");
         if (at_is_norm(palloc_index) && !at_is_allocated(palloc_index)) {
             if (count == 0) {
                 palloc_free_index = palloc_index;
@@ -85,6 +92,7 @@ unsigned int palloc_multi(unsigned int size)
             if (++count >= size) {
                 found = TRUE;
             }
+            KERN_DEBUG("count: %d\n", count);
         }
         palloc_index++;
         if (palloc_index >= VM_USERHI_PI) {
