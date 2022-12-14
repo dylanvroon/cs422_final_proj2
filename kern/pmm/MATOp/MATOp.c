@@ -71,6 +71,8 @@ unsigned int palloc_multi(unsigned int size)
     bool first;
     bool found = FALSE;
 
+    mem_lock();
+
     nps = get_nps();
     palloc_index = last_palloc_index;
     palloc_free_index = nps;
@@ -101,7 +103,48 @@ unsigned int palloc_multi(unsigned int size)
         last_palloc_index = VM_USERLO_PI;
     }
 
+    mem_unlock();
+
     return palloc_free_index;
+}
+
+unsigned int palloc_multi_bb(unsigned int size) {
+
+    unsigned int count;
+    unsigned int min_up_size;
+    unsigned int min_up_index;
+
+    
+    mem_lock();
+    if (size != get_log2(size)) {
+        size = 1 << (get_log2(size) + 1);
+    }
+    while(TRUE) {
+        count = 0;
+        min_up_size = 0;
+        min_up_index = get_bb_total_size() + 1;
+        while(count < get_bb_total_size()) {
+            if (bb_get_size(count) == size && bb_get_used(count) == 0) {
+                bb_set_used(count,1);
+                mem_unlock();
+                return count + get_bb_offset();
+            }
+            if ((bb_get_size(count) < min_up_size) && (bb_get_size(count) > size) && (bb_get_used(count) == 0)) {
+                min_up_size = bb_get_size(count);
+                min_up_index = count;
+            }
+            count += bb_get_size(count);
+        }
+        if (min_up_index > get_bb_total_size()) {
+            mem_unlock();
+            return 0;
+        }
+        bb_split(min_up_index);
+    }
+
+    mem_unlock();
+    return 0;
+    
 }
 
 
@@ -118,4 +161,38 @@ void pfree(unsigned int pfree_index)
     mem_lock();
     at_set_allocated(pfree_index, 0);
     mem_unlock();
+}
+
+void pfree_bb(unsigned int pfree_index) {
+    unsigned int count;
+    unsigned int buddy;
+    unsigned int temp;
+
+    mem_lock();
+    count = pfree_index - get_bb_offset();
+    if (bb_get_used(count) == 0) {
+        KERN_DEBUG("freeing unused buddy block\n");
+    }
+    while(TRUE) {
+        bb_set_used(count, 0);
+        buddy = bb_get_buddy(count, bb_get_size(count));
+        if (buddy >= get_bb_total_size()) {
+            mem_unlock();
+            return;
+        }
+        if (bb_get_used(buddy) == 0 && bb_get_size(buddy) == bb_get_size(count)) {
+            if (buddy < count) {
+                temp = count;
+                count = buddy;
+                buddy = temp;
+            }
+            bb_set_size(buddy, 0);
+            bb_set_size(count, bb_get_size(count)*2);
+        } else {
+            mem_unlock();
+            return;
+        }
+    }
+    mem_unlock();
+    return;
 }
