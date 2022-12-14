@@ -21,6 +21,20 @@ unsigned int at_is_allocated(unsigned int page_index);
 // Mark the allocation flag of the page with the given index using the given value.
 void at_set_allocated(unsigned int page_index, unsigned int allocated);
 
+unsigned int get_bb_offset(void);
+unsigned int get_bb_total_size(void);
+
+unsigned int bb_get_size(unsigned int page_index);
+void bb_set_size(unsigned int page_index, unsigned int size);
+
+unsigned int bb_get_used(unsigned int page_index);
+void bb_set_used(unsigned int page_index, unsigned int used);
+
+unsigned int bb_get_buddy(unsigned int page_index, unsigned int size);
+void bb_split(unsigned int page_index);
+
+unsigned int get_log2(unsigned int start);
+
 #endif  /* _KERN_ */
 
 #endif  /* !_KERN_PMM_MATOP_H_ */

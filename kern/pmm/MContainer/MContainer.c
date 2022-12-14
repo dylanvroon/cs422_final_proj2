@@ -151,7 +151,11 @@ unsigned int container_alloc_multi(unsigned int id, unsigned int size) {
 
     if (CONTAINER[id].usage + size <= CONTAINER[id].quota) {
         CONTAINER[id].usage += size;
-        page_index = palloc_multi(size);
+        if (size <= 4) {
+            page_index = palloc_multi(size);
+        } else {
+            page_index = palloc_multi_bb(size);
+        }
     }
 
     spinlock_release(&container_lks[id]);

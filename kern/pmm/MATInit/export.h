@@ -4,6 +4,7 @@
 #ifdef _KERN_
 
 void pmem_init(unsigned int mbi_addr);
+unsigned int get_log2(unsigned int start);
 
 #endif  /* _KERN_ */
 

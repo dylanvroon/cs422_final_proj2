@@ -40,6 +40,24 @@ unsigned int is_usable(unsigned int idx);  // Whether the range with given row i
  */
 void devinit(unsigned int mbi_addr);
 
+unsigned int get_bb_offset(void);
+void set_bb_offset(unsigned int page_index);
+
+unsigned int get_bb_total_size(void);
+void set_bb_total_size(unsigned int size);
+
+unsigned int bb_get_size(unsigned int page_index);
+void bb_set_size(unsigned int page_index, unsigned int size);
+
+unsigned int bb_get_used(unsigned int page_index);
+void bb_set_used(unsigned int page_index, unsigned int used);
+
+// unsigned int bb_get_start(unsigned int page_index);
+// void bb_set_start(unsigned int page_index, unsigned int start);
+
+// unsigned int bb_get_next(unsigned int page_index);
+// void bb_set_next(unsigned int page_index, unsigned int next);
+
 #endif  /* _KERN_ */
 
 #endif  /* !_KERN_PMM_MATINIT_H_ */
