@@ -109,6 +109,7 @@
 #define MagicNumber 1048577
 #define MAX_CHILDREN 3
 #define SUPERPAGE_SIZE 1024
+#define AT_BB_THRESHOLD 31
 
 uintptr_t read_esp(void);
 uint32_t read_ebp(void);

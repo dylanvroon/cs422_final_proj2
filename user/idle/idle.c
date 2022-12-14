@@ -7,12 +7,12 @@ int main(int argc, char **argv)
 {
     printf("idle\n");
 
-    pid_t fstest_pid;
+    pid_t memtest_pid;
 
-    if ((fstest_pid = spawn(4, 20000)) != -1)
-        printf("fstest in process %d.\n", fstest_pid);
+    if ((memtest_pid = spawn(4, 20000)) != -1)
+        printf("memtest in process %d.\n", memtest_pid);
     else
-        printf("Failed to launch fstest.\n");
+        printf("Failed to launch memtest.\n");
 
     return 0;
 }

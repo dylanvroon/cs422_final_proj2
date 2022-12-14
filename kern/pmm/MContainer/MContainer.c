@@ -151,11 +151,7 @@ unsigned int container_alloc_multi(unsigned int id, unsigned int size) {
 
     if (CONTAINER[id].usage + size <= CONTAINER[id].quota) {
         CONTAINER[id].usage += size;
-<<<<<<< HEAD
-        if (size <= 1025) {
-=======
-        if (size <= 1023) {
->>>>>>> 1852f780 (hvubwiouvb)
+        if (size <= AT_BB_THRESHOLD) {
             page_index = palloc_multi(size);
         } else {
             page_index = palloc_multi_bb(size);
@@ -188,12 +184,25 @@ void container_free_multi(unsigned int id, unsigned int page_index, unsigned int
 {
     spinlock_acquire(&container_lks[id]);
 
-    if (at_is_allocated(page_index)) {
-        pfree_bb(page_index);
-        if (CONTAINER[id].usage > n) {
-            CONTAINER[id].usage -= n;
+    if (n < AT_BB_THRESHOLD) {
+        for (unsigned int i = 0; i < n; i++) {
+            if (at_is_allocated(page_index + i)) {
+                pfree(page_index + i);
+                if (CONTAINER[id].usage > 0) {
+                    CONTAINER[id].usage--;
+                }
+            }
         }
-    }
+    } else {
+        KERN_DEBUG("got here \n");
+
+        if (page_index >= get_bb_offset() && page_index < get_bb_offset() + get_bb_total_size() && bb_get_used(page_index - get_bb_offset()) == 1) {
+            pfree_bb(page_index);
+            if (CONTAINER[id].usage > n) {
+                CONTAINER[id].usage -= n;
+            }
+        }
+    }   
 
     spinlock_release(&container_lks[id]);
 }

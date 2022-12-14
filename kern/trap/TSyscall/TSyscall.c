@@ -57,7 +57,7 @@ void sys_puts(tf_t *tf)
 extern uint8_t _binary___obj_user_pingpong_ping_start[];
 extern uint8_t _binary___obj_user_pingpong_pong_start[];
 extern uint8_t _binary___obj_user_pingpong_ding_start[];
-extern uint8_t _binary___obj_user_fstest_fstest_start[];
+extern uint8_t _binary___obj_user_memtest_memtest_start[];
 // extern uint8_t _binary___obj_user_pingpong_shell_start[];
 
 /**
@@ -117,7 +117,7 @@ void sys_spawn(tf_t *tf)
         elf_addr = _binary___obj_user_pingpong_ding_start;
         break;
     case 4:
-        elf_addr = _binary___obj_user_fstest_fstest_start;
+        elf_addr = _binary___obj_user_memtest_memtest_start;
         break;
     // case 5:
     //     elf_addr = _binary___obj_user_pingpong_shell_start;

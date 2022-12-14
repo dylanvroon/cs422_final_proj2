@@ -204,9 +204,11 @@ void pfree_bb(unsigned int pfree_index) {
     if (bb_get_used(count) == 0) {
         KERN_DEBUG("freeing unused buddy block\n");
     }
+    KERN_DEBUG("freeing mi amigo %u\n", count);
     while(TRUE) {
         bb_set_used(count, 0);
         buddy = bb_get_buddy(count, bb_get_size(count));
+        KERN_DEBUG("freeing mi buddy %u\n", buddy);
         if (buddy >= get_bb_total_size()) {
             mem_unlock();
             return;

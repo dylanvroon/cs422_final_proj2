@@ -77,7 +77,7 @@ void free_page_multi(unsigned int proc_index, unsigned int vaddr, unsigned int n
     {
         page_index = get_pdir_entry_by_va(proc_index, vaddr) >> 12;
         rmv_pdir_entry(proc_index, PDE_ADDR(vaddr));
-        container_free_multi(proc_index, page_index, n);
+        container_free_multi(proc_index, page_index, SUPERPAGE_SIZE);
     }
     else 
     {
