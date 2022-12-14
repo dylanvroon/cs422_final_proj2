@@ -740,31 +740,44 @@ void bigdir(void)
 
 int main(int argc, char *argv[])
 {
-    printf("*******usertests starting*******\n\n");
+    printf("no tests\n");
+    void *vaddr = (void *) (10*4194304);
+    int ret = brk(vaddr, 2);
+    printf("ret value: %d\n", ret);    
 
-    printf("=====test file usertests.ran does not exists=====\n");
 
-    if (open("usertests.ran", O_RDONLY) >= 0) {
-        printf("already ran user tests (file usertests.ran exists) "
-               "-- recreate certikos_disk.img\n");
-        exit(1);
-    }
-    printf("=====test file usertests.ran does not exists: ok\n\n");
-    close(open("usertests.ran", O_CREATE));
+    // for (int i = 10; i < 100; i++) {
+    //     void *vaddr = (void *) (i*4194304);
+    //     printf("input value: %p\n", vaddr);
+    //     int ret = brk(vaddr, 0);
+    //     printf("ret value: %d\n", ret);    
+    // }
+    printf("end tests\n");
+    // printf("*******usertests starting*******\n\n");
 
-    smallfile();
-    bigfile1();
-    createtest();
+    // printf("=====test file usertests.ran does not exists=====\n");
 
-    rmdot();
-    fourteen();
-    bigfile2();
-    subdir();
-    linktest();
-    unlinkread();
-    dirfile();
-    iref();
-    bigdir();  // slow
-    printf("*******end of tests*******\n");
+    // if (open("usertests.ran", O_RDONLY) >= 0) {
+    //     printf("already ran user tests (file usertests.ran exists) "
+    //            "-- recreate certikos_disk.img\n");
+    //     exit(1);
+    // }
+    // printf("=====test file usertests.ran does not exists: ok\n\n");
+    // close(open("usertests.ran", O_CREATE));
+
+    // smallfile();
+    // bigfile1();
+    // createtest();
+
+    // rmdot();
+    // fourteen();
+    // bigfile2();
+    // subdir();
+    // linktest();
+    // unlinkread();
+    // dirfile();
+    // iref();
+    // bigdir();  // slow
+    // printf("*******end of tests*******\n");
     return 0;
 }

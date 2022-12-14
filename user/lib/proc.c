@@ -11,3 +11,8 @@ void yield(void)
 {
     sys_yield();
 }
+
+int brk(void *addr, unsigned int n) 
+{
+    return sys_brk(addr, n);
+}

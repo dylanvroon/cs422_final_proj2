@@ -151,3 +151,38 @@ void sys_yield(tf_t *tf)
     thread_yield();
     syscall_set_errno(tf, E_SUCC);
 }
+
+void sys_brk(tf_t *tf)
+{
+    unsigned int n;
+    unsigned int vaddr; 
+    unsigned int ret;
+    unsigned int cur_pid;
+
+
+    cur_pid = get_curid();
+    vaddr = (unsigned int) syscall_get_arg2(tf);
+    n = syscall_get_arg3(tf);
+    if (n > 0) {
+        ret = alloc_page_multi(cur_pid, vaddr, 0, n);
+    }
+    else {
+        ret = alloc_page_super(cur_pid, vaddr, 0);
+    }
+        
+    if (ret != MagicNumber) {
+        syscall_set_errno(tf, E_SUCC);
+        syscall_set_retval1(tf, 0);
+    }
+    else {
+        syscall_set_errno(tf, E_MEM);
+        syscall_set_retval1(tf, -1);
+    }
+}
+
+
+
+
+
+
+

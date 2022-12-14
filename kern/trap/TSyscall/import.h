@@ -23,6 +23,10 @@ unsigned int container_get_nchildren(unsigned int curid);
 unsigned int proc_create(void *elf_addr, unsigned int quota);
 void thread_yield(void);
 
+unsigned int alloc_page_super(unsigned int proc_index, unsigned int vaddr, unsigned int perm);
+unsigned int alloc_page_multi(unsigned int proc_index, unsigned int vaddr, unsigned int perm, unsigned int size);
+
+
 #endif  /* _KERN_ */
 
 #endif  /* !_KERN_TRAP_TSYSCALL_H_ */

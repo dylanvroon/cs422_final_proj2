@@ -40,7 +40,7 @@ unsigned int alloc_page_multi(unsigned int proc_index, unsigned int vaddr,
 unsigned int alloc_page_super(unsigned int proc_index, unsigned int vaddr,
                         unsigned int perm)
 {
-    unsigned int page_index = container_alloc_multi(proc_index, SUPERPAGE_SIZE);
+    unsigned int page_index = container_alloc_multi(proc_index, 1024);
     if (page_index != 0) {
         return map_page_super(proc_index, vaddr, page_index, perm);
     } else {

@@ -208,4 +208,24 @@ static gcc_inline int sys_readlin(char *dst)
     return errno ? -1 : 0;
 }
 
+static gcc_inline int sys_brk(void *addr, unsigned int n)
+{
+   int errno, ret;
+
+    asm volatile ("int %2"
+                  : "=a" (errno), "=b" (ret)
+                  : "i" (T_SYSCALL),
+                     "a" (SYS_brk),
+                     "b" (addr),
+                     "c" (n)
+                  : "cc", "memory");
+
+   return errno ? -1 : 0;
+}
+
+
+
+
+
+
 #endif  /* !_USER_SYSCALL_H_ */

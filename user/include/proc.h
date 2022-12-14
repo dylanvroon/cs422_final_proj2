@@ -5,5 +5,6 @@
 
 pid_t spawn(unsigned int elf_id, unsigned int quota);
 void yield(void);
+int brk(void *addr, unsigned int n);
 
 #endif  /* !_USER_PROC_H_ */
