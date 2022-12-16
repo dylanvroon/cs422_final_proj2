@@ -126,11 +126,14 @@ unsigned int palloc_multi_bb(unsigned int size) {
     
     mem_lock();
     if (size != get_log2(size)) {
+        KERN_DEBUG("Requesting physical memory block of size: %u, %u pages given\n\t(must be power of 2 for buddy allocation)\n", size,  1 << (get_log2(size) + 1));
         size = 1 << (get_log2(size) + 1);
+    } else {
+        KERN_DEBUG("Requesting physical memory block of size: %u\n", size);
     }
-    KERN_DEBUG("got here\n");
-    // KERN_DEBUG("get_bb_total size: %u\n", get_bb_total_size());
-    KERN_DEBUG("goal size: %u\n", size);
+    // KERN_DEBUG("got here\n");
+    // // KERN_DEBUG("get_bb_total size: %u\n", get_bb_total_size());
+    // KERN_DEBUG("goal size: %u\n", size);
     while(TRUE) {
         testing_count++;
         count = 0;
@@ -142,17 +145,17 @@ unsigned int palloc_multi_bb(unsigned int size) {
             //     mem_unlock();
             //     return 0;
             // }
-            KERN_DEBUG("\n ----- count: %u\n", count);
-            KERN_DEBUG("bb size of count: %u\n", bb_get_size(count));
-            KERN_DEBUG("min_up_size: %u\n", min_up_size);
-            // KERN_DEBUG("current size: %u\n", size);
-            KERN_DEBUG("is used? %u\n", bb_get_used(count));
+            // KERN_DEBUG("\n ----- count: %u\n", count);
+            // KERN_DEBUG("bb size of count: %u\n", bb_get_size(count));
+            // KERN_DEBUG("min_up_size: %u\n", min_up_size);
+            // // KERN_DEBUG("current size: %u\n", size);
+            // KERN_DEBUG("is used? %u\n", bb_get_used(count));
             if (bb_get_size(count) == size && bb_get_used(count) == 0) {
                 // KERN_DEBUG("got here?onvgojqbeovbnqoeno\n");
                 bb_set_used(count,1);
                 mem_unlock();
-                KERN_DEBUG("\n\ncount: %u\n", count);
-                KERN_DEBUG("get result: %u\n", get_bb_offset() + count);
+                // KERN_DEBUG("\n\ncount: %u\n", count);
+                // KERN_DEBUG("get result: %u\n", get_bb_offset() + count);
                 return count + get_bb_offset();
             }
             
@@ -162,8 +165,8 @@ unsigned int palloc_multi_bb(unsigned int size) {
             }
             count += bb_get_size(count);
         }
-        KERN_DEBUG("min_up_size: %u\n", min_up_size);
-        KERN_DEBUG("Min up index: %u\n", min_up_index);
+        KERN_DEBUG("Found block of size %u at page_index %u (index %u in BB array)\n", min_up_size, min_up_index + get_bb_offset(), min_up_index);
+        // KERN_DEBUG("Min up index: %u\n", min_up_index);
         if (min_up_index > get_bb_total_size()) {
             mem_unlock();
             return 0;
